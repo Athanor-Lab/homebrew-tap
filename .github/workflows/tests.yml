@@ -1,0 +1,37 @@
+name: brew test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Install from source
+        run: brew install --build-from-source --verbose ./Formula/hyperflux.rb
+
+      - name: Test
+        run: brew test hyperflux
+
+      - name: Audit
+        run: brew audit --strict --formula ./Formula/hyperflux.rb || true
