@@ -27,11 +27,19 @@ jobs:
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@master
 
+      - name: Register this checkout as a tap
+        run: |
+          set -euo pipefail
+          tap="$(brew --repository)/Library/Taps/athanor-lab/homebrew-tap"
+          mkdir -p "$(dirname "$tap")"
+          ln -s "$GITHUB_WORKSPACE" "$tap"
+          brew tap
+
       - name: Install from source
-        run: brew install --build-from-source --verbose ./Formula/hyperflux.rb
+        run: brew install --build-from-source --verbose athanor-lab/tap/hyperflux
 
       - name: Test
-        run: brew test hyperflux
+        run: brew test athanor-lab/tap/hyperflux
 
       - name: Audit
-        run: brew audit --strict --formula ./Formula/hyperflux.rb || true
+        run: brew audit --strict athanor-lab/tap/hyperflux || true
